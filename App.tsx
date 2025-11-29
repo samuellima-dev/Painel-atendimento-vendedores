@@ -8,12 +8,21 @@ import { ConfigModal } from './components/ConfigModal';
 import { UserModal } from './components/UserModal';
 import { ConfirmationModal } from './components/ConfirmationModal';
 
-// Helper to safely extract error message
+// Helper to safely extract error message and avoid [object Object]
 const getErrorMessage = (error: unknown): string => {
   if (typeof error === 'string') return error;
   if (error instanceof Error) return error.message;
-  if (typeof error === 'object' && error !== null && 'message' in error) {
-    return String((error as any).message);
+  if (typeof error === 'object' && error !== null) {
+    // Handle Supabase/API error objects that have a message
+    if ('message' in error) {
+      return String((error as any).message);
+    }
+    // Fallback for other objects: try to stringify
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return 'Unknown error object';
+    }
   }
   return 'An unexpected error occurred';
 };
@@ -37,17 +46,22 @@ const App: React.FC = () => {
   const [aiReport, setAiReport] = useState<string | null>(null);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
-  const fetchAgents = useCallback(async () => {
-    setStatus('loading');
-    setError(null);
+  // Modified to support background refresh without triggering loading state
+  const fetchAgents = useCallback(async (isBackground: boolean = false) => {
+    if (!isBackground) {
+      setStatus('loading');
+      setError(null);
+    }
     try {
       const data = await supabaseService.getAtendentes();
       setAgents(data);
-      setStatus('success');
+      if (!isBackground) setStatus('success');
     } catch (err: unknown) {
       console.error(err);
-      setError(getErrorMessage(err));
-      setStatus('error');
+      if (!isBackground) {
+        setError(getErrorMessage(err));
+        setStatus('error');
+      }
     }
   }, []);
 
@@ -60,14 +74,24 @@ const App: React.FC = () => {
       const success = supabaseService.initSupabase({ url: storedUrl, key: storedKey });
       setIsConnected(success);
     }
-    // Always fetch (it will mock if not connected)
-    fetchAgents();
+    // Initial fetch (shows loading)
+    fetchAgents(false);
+  }, [fetchAgents]);
+
+  // Auto-refresh every 60 seconds (60000 ms)
+  // This updates only the data from the database, not the whole page
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchAgents(true); // Background fetch: true suppresses loading spinner
+    }, 60000);
+
+    return () => clearInterval(intervalId);
   }, [fetchAgents]);
 
   const handleConfigSave = (config: SupabaseConfig) => {
     const success = supabaseService.initSupabase(config);
     setIsConnected(success);
-    fetchAgents();
+    fetchAgents(false);
   };
 
   const handleToggleStatus = async (id: number | string, currentStatus: boolean) => {
@@ -132,7 +156,7 @@ const App: React.FC = () => {
         if (newAgent) {
            setAgents(prev => [...prev, newAgent]);
         } else {
-           fetchAgents();
+           fetchAgents(false);
         }
       }
     } catch (err) {
