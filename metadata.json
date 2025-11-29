@@ -1,0 +1,5 @@
+{
+  "name": "Painel de Atendimento dos Vendedores",
+  "description": "A real-time dashboard to manage support agent availability statuses via Supabase, featuring AI-powered team insights.",
+  "requestFramePermissions": []
+}
