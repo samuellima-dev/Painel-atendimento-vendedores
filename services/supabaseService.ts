@@ -30,7 +30,7 @@ export const getAtendentes = async (): Promise<Atendente[]> => {
   }
 
   const { data, error } = await supabase
-    .from('atendimento')
+    .from('atendentes')
     .select('*')
     .order('nome', { ascending: true });
 
@@ -53,7 +53,7 @@ export const updateAtendenteStatus = async (id: number | string, newStatus: bool
   }
 
   const { error } = await supabase
-    .from('atendimento')
+    .from('atendentes')
     .update({ status: newStatus })
     .eq('id', id);
 
@@ -77,7 +77,7 @@ export const addAtendente = async (nome: string, numero: string): Promise<Atende
   }
 
   const { data, error } = await supabase
-    .from('atendimento')
+    .from('atendentes')
     .insert([newAgent])
     .select()
     .single();
@@ -100,7 +100,7 @@ export const updateAtendenteInfo = async (id: number | string, nome: string, num
   }
 
   const { error } = await supabase
-    .from('atendimento')
+    .from('atendentes')
     .update({ nome, numero })
     .eq('id', id);
 
@@ -120,7 +120,7 @@ export const deleteAtendente = async (id: number | string): Promise<void> => {
   }
 
   const { error } = await supabase
-    .from('atendimento')
+    .from('atendentes')
     .delete()
     .eq('id', id);
 

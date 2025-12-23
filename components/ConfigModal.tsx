@@ -45,7 +45,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, onSav
         
         <div className="p-6 space-y-4">
           <p className="text-sm text-slate-500 mb-4">
-            Enter your Supabase credentials to connect to the <code>atendimento</code> table.
+            Enter your Supabase credentials to connect to the <code>atendentes</code> table.
             If left empty, the app uses <b>Demo Mode</b>.
           </p>
 

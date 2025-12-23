@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { Atendente } from '../types';
 
@@ -27,10 +28,12 @@ export const generateTeamReport = async (atendentes: Atendente[]): Promise<strin
   `;
 
   try {
+    // Using gemini-3-flash-preview for summarization task as per guidelines
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
     });
+    // Accessing .text property directly (not a method)
     return response.text || "Could not generate report.";
   } catch (error) {
     console.error("Gemini API Error:", error);
